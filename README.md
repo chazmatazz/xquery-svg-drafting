@@ -36,11 +36,11 @@ outputs an SVG.
 
 ## Software required
 
-# XQuery editor (suggested): 28msec Sausalito (all platforms). This is an Eclipse-based 
+* XQuery editor (suggested): 28msec Sausalito (all platforms). This is an Eclipse-based 
 editor that includes the Zorba XQuery processor.
-# SVG-capable browser: Google Chrome, etc.
-# SVG editor: Inkscape, svg-edit (browser-based), etc.
-# SVG->cutter converter: a converter that can convert SVG to a format the laser cutter 
+* SVG-capable browser: Google Chrome, etc.
+* SVG editor: Inkscape, svg-edit (browser-based), etc.
+* SVG->cutter converter: a converter that can convert SVG to a format the laser cutter 
 or computerized paper cutter can use, e.g. Inkscape, Corel Draw, etc.
 
 Students should use the included `svg-utils.xq`, a library for generating SVG transform 
