@@ -16,33 +16,26 @@ declare function local:arc($radius as xs:double, $arc-angle as xs:double) as ele
                 end-x="{$radius * math:cos($arc-angle)}" end-y="{$radius * math:sin($arc-angle)}" />
 };
 
-declare function local:generate-teeth($arc as element(cone-sphere:arc), $outside as xs:boolean, 
-    $arc-angle as xs:double, $tab-width as xs:integer, $tooth-width as xs:integer) as element(svg:g) {
-    let $r := $arc/@radius
-    let $fractional-teeth := ($arc-angle * $r - $tab-width div 2) div $tooth-width
-    let $num-teeth := xs:integer($fractional-teeth)
-    let $scale := $fractional-teeth div $num-teeth
-    let $d-angle := $arc-angle div $num-teeth
-    return 
-    <g>
-    {
-    for $i in (1 to $num-teeth)
-        let $a := ($i - 0.5) * $d-angle
-        let $x := $r * math:cos($a)
-        let $y := $r * math:sin($a)
-        return <use xlink:href="#tooth" 
-            transform="{svg-utils:transform((svg-utils:translate($x, $y), 
-            svg-utils:rotate(svg-utils:rad-to-deg($a)),
-            svg-utils:rotate(90)))}" />
-    }
-    </g>
+declare function local:get-pts($pt-str as xs:string) as xs:integer* {
+    let $pts := tokenize($pt-str, " ")
+    return {for $pt in $pts
+        let $cs := tokenize($pt, ",")
+        return {for $c in $cs
+            return xs:integer($c)}}
 };
 
-let $tooth-width := 100
-let $tooth-height := 50
-
 let $tab-width := 100
-let $tab-height := 100
+let $tab-height := 50
+
+let $tab-str := "0,0 35,0 35,25 25,25 50,50 75,25 65,25 65,0 100,0"
+let $tab-pts := local:get-pts($tab-str)
+
+let $slot-str := "35,25 65,25"
+let $slot-pts := local:get-pts($slot-str)
+
+let $end-tab-angle := math:pi() div 8
+
+let $a90 := math:pi() div 2
 
 let $inner-radius := 200
 let $n := 5
@@ -58,23 +51,18 @@ let $center-height := xs:integer($side-length)
 let $max-radius := $center-width * 2(: TODO: calculate properly :)
 
 let $svg-width := $max-radius * 4
-let $svg-height := $center-height + $max-radius * 2
+let $svg-height := $center-height + $max-radius * 4
 
 return
 <svg version="1.1"
      xmlns:xlink="http://www.w3.org/1999/xlink"
      baseProfile="full" width="{$svg-width}" height="{$svg-height}">     
      <style type="text/css">
-        .guide {{ stroke: red; fill: none; }}
+        .guide {{ fill: red; }}
         .valley-fold {{ stroke: black; stroke-dasharray: 9, 5; fill:none; }}
         .mountain-fold {{ stroke: black; stroke-dasharray: 9, 5, 3, 5; fill: none; }}
         .cut {{ stroke:black; fill: none; }}
      </style>
-    <defs>
-        <path id="tooth" d="M 0,0 q 35,0 25,-25 -10,-25 25,-25 35,0 25,25 -10,25 25,25" />                
-        <path id="tab" d="M 100,0 l 0,25 -50,0 0,-25 -50,50 50,50 0,-25 50,0 0,25" />
-        <path id="slot" d="M 50,0 l 50,0 0,100 -50,0 M 50,25 l 0,50" />
-    </defs>
     {
     for $i in (1 to $num-cones)
         let $cone-id := concat("cone-", $i)
@@ -84,50 +72,66 @@ return
         if ($center)
         then
         {
-            let $width := $center-width
-            let $height := $center-height
+            let $fractional-tabs := $center-width div $tab-width
+            let $num-tabs := xs:integer($fractional-tabs)
+            let $tab-scale := $fractional-tabs div $num-tabs
             
-            let $fractional-teeth := ($width - $tab-width div 2) div $tooth-width
-            let $num-teeth := xs:integer($fractional-teeth)
-            let $tooth-scale := $fractional-teeth div $num-teeth
-            let $tooth-scaled-width := $tooth-width * $tooth-scale
-            let $tooth-scaled-height := $tooth-height * $tooth-scale
-                        
+            let $width := $center-width div $tab-scale
+            let $height := $center-height div ($side-length div $tab-width)
+            
+            (:
+            move to upper left of guide
+            draw top
+            draw right border
+            draw lower border
+            draw left tab
+            draw top slots L->R
+            draw bottom slots L->R
+            draw right slot
+            :)
+            let $d := svg-utils:path((svg-utils:M($tab-height, $tab-height),
+                svg-utils:H($tab-height + $width),
+              svg-utils:M($tab-height + $width, $tab-height),
+              svg-utils:V($tab-height + $height),
+              svg-utils:H($tab-height),
+              svg-utils:L(({for $i in (1 to xs:integer(count($tab-pts) div 2))
+                        let $x := $tab-pts[2 * $i - 1]
+                        let $y := $tab-pts[2 * $i]
+                        let $tx := $tab-height + $x * math:cos(-$a90) + $y * math:sin(-$a90)
+                        let $ty := $tab-height - $x * math:sin(-$a90) + $y * math:cos(-$a90)
+                        return
+                        ($tx,$ty)})),
+              svg-utils:path({for $i in (1 to $num-tabs)
+                    return svg-utils:path((svg-utils:M($tab-height + $slot-pts[1] + ($i - 1) * $tab-width,
+                              $tab-height + $slot-pts[2]),
+                              svg-utils:L($tab-height + $slot-pts[3] + ($i - 1) * $tab-width,
+                              $tab-height + $slot-pts[4])))}),
+              svg-utils:path({for $i in (1 to $num-tabs)
+                    return svg-utils:path((svg-utils:M($tab-height + $slot-pts[1] + ($i - 1) * $tab-width,
+                              $tab-height + $height - $slot-pts[2]),
+                              svg-utils:L($tab-height + $slot-pts[3] + ($i - 1) * $tab-width,
+                              $tab-height + $height - $slot-pts[4])))}),
+              svg-utils:path((
+                    svg-utils:M(
+                    $tab-height + $width + $slot-pts[1] * math:cos(-$a90) + $slot-pts[2] * math:sin(-$a90),
+                    $tab-height - $slot-pts[1] * math:sin(-$a90) + $slot-pts[2] * math:cos(-$a90)),
+                    svg-utils:L(
+                    $tab-height + $width + $slot-pts[3] * math:cos(-$a90) + $slot-pts[4] * math:sin(-$a90),
+                    $tab-height - $slot-pts[3] * math:sin(-$a90) + $slot-pts[3] * math:cos(-$a90))))))
             return
-            <g id="{$cone-id}" transform="{svg-utils:translate($tab-width div 2, $tooth-scaled-height)}">
-                <rect class="guide" x="0" y="0" 
-                    width="{$width}" height="{$height}" />
-                    <g class="cut">
-                        <g transform="{svg-utils:transform((svg-utils:scale(1, $side-length div $tab-height), 
-                            svg-utils:translate(-$tab-width div 2)))}">
-                            <use xlink:href="#tab"/>
-                            <use xlink:href="#slot" transform="{svg-utils:translate($width)}"/>
-                        </g>
-                        <g transform="{svg-utils:translate($tab-width div 2)}">
-                        {for $i in (0 to 1)
-                            let $y := $i * $center-height
-                            return 
-                            <g transform="{svg-utils:transform((svg-utils:translate(0, $y), 
-                                svg-utils:scale($tooth-scale)))}">
-                            {for $j in (1 to $num-teeth)
-                                let $x := ($j - 1) * $tooth-width
-                                return <use xlink:href="#tooth" 
-                                    transform="{svg-utils:transform((svg-utils:translate($x), 
-                                    svg-utils:scale(1, 1 - 2 * $i)))}" />
-                            }
-                            </g>
-                        }
-                        </g>
-                   </g>
+            <g id="{$cone-id}" transform="{svg-utils:scale($tab-scale, $side-length div $tab-width)}">
+                <rect class="guide" x="{xs:integer($tab-height)}" 
+                    y="{xs:integer($tab-height)}" 
+                    width="{xs:integer($width)}" 
+                    height="{xs:integer($height)}" />
+                <path class="cut" d="{$d}" />
             </g>
         }
         else 
         {
             let $center-x := $max-radius + (if ($i > $n) then 2 * $max-radius else 0)
-            let $center-y := $max-radius + $center-height
-            return
-            <g id="{$cone-id}" transform="{svg-utils:translate($center-x, $center-y)}">
-            {
+            let $center-y := $max-radius + $center-height + $max-radius * 2 * ($i mod 2) - 1
+
             let $cone-radii := {
             for $j in (-1 to 0)
                 return
@@ -146,7 +150,7 @@ return
             
             let $is-cone := xs:integer($inner-p) = 0
             
-            let $d := if ($is-cone) then {
+            let $guide-d := if ($is-cone) then {
                  svg-utils:path((svg-utils:M($arc/@start-x, $arc/@start-y), 
                                     svg-utils:A($arc/@radius, $arc/@radius, 
                                     0, $large-arc-flag, 1, 
@@ -165,37 +169,102 @@ return
                                     svg-utils:L($arc/@start-x,$arc/@start-y),
                                     svg-utils:Z()))
             }
-            let $tab-start-translate := svg-utils:translate(-$tab-width div 2)
-            let $tab-scale := svg-utils:scale(1, $side-length div $tab-height)
-            let $tabs := if ($is-cone) then <g/>
-            else 
-            <g>
-                <use xlink:href="#tab" 
-                    transform="{svg-utils:transform((svg-utils:translate($arc/@start-x, $arc/@start-y), 
-                    svg-utils:rotate(90), $tab-scale, $tab-start-translate))}"/>
-                <use xlink:href="#slot" 
-                    transform="{svg-utils:transform((svg-utils:translate($arc/@end-x, $arc/@end-y),
-                    svg-utils:rotate(svg-utils:rad-to-deg($arc-angle)+90), $tab-scale,
-                    $tab-start-translate))}"/>
-            </g>
+
+            let $cut-d := if ($is-cone) then {
+                let $fractional-tabs := $p * $arc-angle div $tab-width
+                let $num-tabs := xs:integer($fractional-tabs)
+                let $tab-scale := $fractional-tabs div $num-tabs
+                let $d-tab-angle := $arc-angle div $num-tabs
+                return
+                (: draw tabs then pie slice :)
+                svg-utils:path((svg-utils:M($arc/@start-x, $arc/@start-y),
+                    svg-utils:L({for $i in (1 to $num-tabs)
+                         let $tab-start-angle := ($i - 1) * $d-tab-angle
+                         for $j in (1 to xs:integer(count($tab-pts) div 2))
+                            let $x := $tab-pts[2 * $j - 1]
+                            let $y := $tab-pts[2 * $j]
+                            let $rot-x := $x * math:cos($a90) + $y * math:sin($a90)
+                            let $rot-y := $x * math:sin($a90) - $y * math:cos($a90)
+                            let $x-radius := $rot-x + $arc/@radius
+                            let $y-angle := $tab-start-angle + $d-tab-angle * $rot-y div $tab-width
+                            let $tx := $x-radius * math:cos($y-angle)
+                            let $ty := $x-radius * math:sin($y-angle)
+                            return
+                            ($tx,$ty)}),
+                            svg-utils:L(0,0),
+                            svg-utils:L($arc/@start-x, $arc/@start-y),
+                            svg-utils:Z()))
+            } else {
+                let $fractional-tabs := $p * $arc-angle div $tab-width
+                let $num-tabs := xs:integer($fractional-tabs)
+                let $tab-scale := $fractional-tabs div $num-tabs
+                let $d-tab-angle := $arc-angle div $num-tabs
+                
+                let $fractional-slots := $inner-p * $arc-angle div $tab-width
+                let $num-slots := xs:integer($fractional-slots)
+                let $slot-scale := $fractional-slots div $num-slots
+                let $d-slot-angle := $arc-angle div $num-slots
+                
+                return
+                (: 
+                draw outer tabs counterclockwise
+                draw cap
+                draw inner arc
+                draw end tab
+                draw inner slots 
+                draw end slot
+                :)
+                svg-utils:path((svg-utils:M($arc/@start-x, $arc/@start-y),
+                    svg-utils:L({for $i in (1 to $num-tabs)
+                         let $tab-start-angle := ($i - 1) * $d-tab-angle
+                         for $j in (1 to xs:integer(count($tab-pts) div 2))
+                            let $x := $tab-pts[2 * $j - 1]
+                            let $y := $tab-pts[2 * $j]
+                            let $rot-x := $x * math:cos($a90) + $y * math:sin($a90)
+                            let $rot-y := $x * math:sin($a90) - $y * math:cos($a90)
+                            let $x-radius := $rot-x + $arc/@radius
+                            let $y-angle := $tab-start-angle + $d-tab-angle * $rot-y div $tab-width
+                            let $tx := $x-radius * math:cos($y-angle)
+                            let $ty := $x-radius * math:sin($y-angle)
+                            return
+                            ($tx,$ty)}),
+                     svg-utils:L($inner-arc/@end-x, $inner-arc/@end-y),
+                     svg-utils:A($inner-arc/@radius, $inner-arc/@radius, 0, $large-arc-flag, 0,
+                            $inner-arc/@start-x, $inner-arc/@start-y),
+                     svg-utils:L({for $i in (1 to xs:integer(count($tab-pts) div 2))
+                            let $x := $tab-pts[2 * $i - 1]
+                            let $y := $tab-pts[2 * $i]
+                            let $rot-x := -$x * math:cos(0) - $y * math:sin(0)
+                            let $rot-y := $x * math:sin(0) - $y * math:cos(0)
+                            let $x-radius := $rot-x * $side-length div $tab-width + $arc/@radius
+                            let $y-angle := $end-tab-angle * $rot-y div $tab-width
+                            let $tx := $x-radius * math:cos($y-angle)
+                            let $ty := $x-radius * math:sin($y-angle)
+                            return
+                            ($tx,$ty)}),
+                     ({for $i in (1 to $num-slots)
+                            let $slot-start-angle := $i * $d-slot-angle
+                            let $t-pts := {for $j in (1 to xs:integer(count($slot-pts) div 2))
+                                let $x := $slot-pts[2 * $j - 1]
+                                let $y := $slot-pts[2 * $j]
+                                let $rot-x := $x * math:cos($a90) + $y * math:sin($a90)
+                                let $rot-y := -$x * math:sin($a90) + $y * math:cos($a90)
+                                let $x-radius := $rot-x + $inner-arc/@radius
+                                let $y-angle := $slot-start-angle + $d-slot-angle * $rot-y div $tab-width
+                                let $tx := $x-radius * math:cos($y-angle)
+                                let $ty := $x-radius * math:sin($y-angle)
+                                return
+                                ($tx,$ty)}
+                            return 
+                            (svg-utils:M($t-pts[1], $t-pts[2]),
+                            svg-utils:L($t-pts[3], $t-pts[4]))})))
+            }
             
-            let $teeth := if ($is-cone) 
-            then <g>{local:generate-teeth($arc, true(),$arc-angle,$tab-width,$tooth-width)}</g> 
-            else 
-            <g>
-            {local:generate-teeth($arc, true(),$arc-angle,$tab-width,$tooth-width)} 
-            {local:generate-teeth($inner-arc, false(),$arc-angle,$tab-width,$tooth-width)}
-            </g>
             return
-            <g>
-                <path class="guide" d="{$d}" />
-                <g class="cut">
-                    {$tabs}
-                    {$teeth}
-                </g>
-             </g>
-         }
-         </g>
+            <g id="{$cone-id}" transform="{svg-utils:translate($center-x, $center-y)}">
+                <path class="guide" d="{$guide-d}" />
+                <path class="cut" d="{$cut-d}" />
+            </g>
       }
       }
       }

@@ -18,8 +18,21 @@ declare function svg-utils:A($rx as xs:double, $ry as xs:double, $x-axis-rotatio
         $large-arc-flag, ",", $sweep-flag, " ", xs:integer($x), ",", xs:integer($y))
 };
 
+declare function svg-utils:L($ps as xs:double*) as xs:string {
+    concat("L ", string-join({for $i in (1 to xs:integer((count($ps) div 2)))
+                                return concat(xs:integer($ps[2 * $i - 1]), ",", xs:integer($ps[2 * $i]))}, " "))
+};
+
 declare function svg-utils:L($x as xs:double, $y as xs:double) as xs:string {
     concat("L ", xs:integer($x), ",", xs:integer($y))
+};
+
+declare function svg-utils:H($x as xs:double) as xs:string {
+    concat("H ", xs:integer($x))
+};
+
+declare function svg-utils:V($y as xs:double) as xs:string {
+    concat("V ", xs:integer($y))
 };
 
 declare function svg-utils:Z() as xs:string {

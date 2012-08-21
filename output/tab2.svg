@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" version="1.1" baseProfile="full" width="1000" height="50">
+  <style type="text/css">
+        .tab { stroke: black; fill:none; }
+    </style>
+  <defs>
+    <path id="tab" class="tab" d="M 0,50                                     Q 35,50 25,25                                      15,0 50,0                                      85,0 75,25                                      65,50 100,50"/>
+  </defs>
+  <use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#tab" transform="translate(0,0)"/>
+  <use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#tab" transform="translate(100,0)"/>
+  <use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#tab" transform="translate(200,0)"/>
+  <use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#tab" transform="translate(300,0)"/>
+  <use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#tab" transform="translate(400,0)"/>
+  <use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#tab" transform="translate(500,0)"/>
+  <use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#tab" transform="translate(600,0)"/>
+  <use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#tab" transform="translate(700,0)"/>
+  <use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#tab" transform="translate(800,0)"/>
+  <use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#tab" transform="translate(900,0)"/>
+</svg>

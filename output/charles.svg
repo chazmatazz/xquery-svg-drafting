@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns:xlink="http://www.w3.org/1999/xlink" xmlns="http://www.w3.org/2000/svg" version="1.1" baseProfile="full" width="1000" height="400">
+  <style type="text/css">
+        .guide { stroke: red; fill: none; fill-opacity: none; }
+        .valley-fold { stroke: black; stroke-dasharray: 9, 5; fill:none; }
+        .mountain-fold { stroke: black; stroke-dasharray: 9, 5, 3, 5; fill: none; }
+        .cut { stroke:black; fill: none; }
+     </style>
+  <defs>
+    <path id="star" d="M 50,0 V 100 M 0,50 H 100 M 0,0 L 100,100 M 100,0 L 0,100"/>
+  </defs>
+  <g transform="translate(0,150)">
+    <path class="cut" d="M 50,0 H 100 M 50,100 H 100 M 50,0 A 50,50 0 1,0 50,100                          M 150,0 V 100 M 150,50 H 250 M 250,0 V 100                          M 350,0 L 300,100 M 350,0 L 400,100 M 325,50 H 375                         M 450,0 V 100 M 450,0 H 500 M 450,50 H 500 M 500,0 A 25,25 0 1,1 500,50 M 450,50 L 550,100                         M 600,0 V 100 H 700                         M 750,0 V 100 H 850 M 750,0 H 850 M 750,50 H 850                         M 950,0 A 25,25 0 1,0 950,50 A 25,25 0 1,1 950,100 M 950,0 H 1000 M 900,100 H 950"/>
+  </g>
+  <g transform="translate(0,0)">
+    <g transform="translate(0)">
+      <use xlink:href="#star" class="cut"/>
+    </g>
+    <g transform="translate(100)">
+      <use xlink:href="#star" class="cut"/>
+    </g>
+    <g transform="translate(200)">
+      <use xlink:href="#star" class="cut"/>
+    </g>
+    <g transform="translate(300)">
+      <use xlink:href="#star" class="cut"/>
+    </g>
+    <g transform="translate(400)">
+      <use xlink:href="#star" class="cut"/>
+    </g>
+    <g transform="translate(500)">
+      <use xlink:href="#star" class="cut"/>
+    </g>
+    <g transform="translate(600)">
+      <use xlink:href="#star" class="cut"/>
+    </g>
+    <g transform="translate(700)">
+      <use xlink:href="#star" class="cut"/>
+    </g>
+    <g transform="translate(800)">
+      <use xlink:href="#star" class="cut"/>
+    </g>
+    <g transform="translate(900)">
+      <use xlink:href="#star" class="cut"/>
+    </g>
+  </g>
+  <g transform="translate(0,300)">
+    <g transform="translate(0)">
+      <use xlink:href="#star" class="cut"/>
+    </g>
+    <g transform="translate(100)">
+      <use xlink:href="#star" class="cut"/>
+    </g>
+    <g transform="translate(200)">
+      <use xlink:href="#star" class="cut"/>
+    </g>
+    <g transform="translate(300)">
+      <use xlink:href="#star" class="cut"/>
+    </g>
+    <g transform="translate(400)">
+      <use xlink:href="#star" class="cut"/>
+    </g>
+    <g transform="translate(500)">
+      <use xlink:href="#star" class="cut"/>
+    </g>
+    <g transform="translate(600)">
+      <use xlink:href="#star" class="cut"/>
+    </g>
+    <g transform="translate(700)">
+      <use xlink:href="#star" class="cut"/>
+    </g>
+    <g transform="translate(800)">
+      <use xlink:href="#star" class="cut"/>
+    </g>
+    <g transform="translate(900)">
+      <use xlink:href="#star" class="cut"/>
+    </g>
+  </g>
+</svg>
